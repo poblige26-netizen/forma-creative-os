@@ -3,6 +3,7 @@ const $ = id => document.getElementById(id);
 const stages = {idea:'Идеи',doing:'В работе',done:'Готово'};
 const uid = () => crypto.randomUUID();
 const key = 'forma.workspace.v1';
+let selectedStage = 'idea';
 let config = {mode:'demo',token:''}, editing = null, pending = null;
 const initial = () => ({version:1,active:'sample',projects:[{id:'sample',name:'Студия у моря',description:'Визуальная айдентика для маленькой творческой студии.',brief:'Создать айдентику для творческой студии у моря: логотип, палитру и три шаблона публикаций. Аудитория — независимые бренды и авторы.',tasks:[{id:uid(),title:'Найти визуальное направление',description:'Собрать 5 референсов: морской свет, архитектура, фактуры. Отметить подходящие композиции.',stage:'done'},{id:uid(),title:'Разработать знак студии',description:'Нарисовать три варианта. Проверить каждый на маленьком размере и в одном цвете.',stage:'doing'},{id:uid(),title:'Собрать шаблоны публикаций',description:'Обложка проекта, цитата и анонс. Объединить палитрой и типографикой.',stage:'idea'}]}]});
 function validState(s){return s && s.version===1 && Array.isArray(s.projects) && s.projects.length>0 && s.projects.some(p=>p.id===s.active) && s.projects.every(p=>typeof p.id==='string' && typeof p.name==='string' && typeof p.description==='string' && typeof p.brief==='string' && Array.isArray(p.tasks) && p.tasks.every(t=>typeof t.id==='string' && typeof t.title==='string' && typeof t.description==='string' && Object.hasOwn(stages,t.stage)));}
@@ -15,15 +16,16 @@ function element(tag,className,text){const el=document.createElement(tag);if(cla
 function render(){
   const p=project();$('name').textContent=p.name;$('crumb').textContent=p.name;$('summary').textContent=p.description;$('brief').value=p.brief;
   const done=p.tasks.filter(t=>t.stage==='done').length,percent=p.tasks.length?Math.round(done/p.tasks.length*100):0;
+  $('task-total').textContent=`${p.tasks.length} задач · ${done} завершено`;
   $('percent').textContent=percent+'%';$('progress').value=percent;
   $('projects').replaceChildren();
   state.projects.forEach(item=>{const b=element('button','',item.name);b.setAttribute('aria-current',String(item.id===p.id));b.onclick=()=>{state.active=item.id;save();render();announce('');};$('projects').append(b);});
   $('board').replaceChildren();
   Object.entries(stages).forEach(([stage,label])=>{
-    const column=element('section','column'),heading=element('h3','');heading.append(element('i','stage-dot'),document.createTextNode(label));
-    const tasks=p.tasks.filter(t=>t.stage===stage);heading.append(element('span','',String(tasks.length)));column.append(heading);
+    const column=element('section','column');column.dataset.stage=stage;column.classList.toggle('active-stage',stage===selectedStage);const heading=element('h3','');heading.append(element('i','stage-dot'),document.createTextNode(label));
+    const tasks=p.tasks.filter(t=>t.stage===stage);const switchButton=document.querySelector(`[data-stage="${stage}"]`);switchButton.textContent=`${label} ${tasks.length}`;switchButton.setAttribute('aria-pressed',String(stage===selectedStage));heading.append(element('span','',String(tasks.length)));column.append(heading);
     tasks.forEach(t=>{const card=element('article','task');const title=element('button','task-title',t.title);title.setAttribute('aria-label','Редактировать: '+t.title);title.onclick=()=>openTask(t);card.append(title,element('p','',t.description));
-      const select=element('select','');select.setAttribute('aria-label','Этап: '+t.title);Object.entries(stages).forEach(([v,n])=>{const opt=element('option','',n);opt.value=v;select.append(opt);});select.value=t.stage;select.onchange=()=>{t.stage=select.value;save();render();announce('Этап задачи обновлён.');};card.append(select);column.append(card);});
+      const select=element('select','');select.setAttribute('aria-label','Этап: '+t.title);Object.entries(stages).forEach(([v,n])=>{const opt=element('option','',n);opt.value=v;select.append(opt);});select.value=t.stage;select.onchange=()=>{t.stage=select.value;selectedStage=t.stage;save();render();announce('Этап задачи обновлён.');};card.append(select);column.append(card);});
     if(!tasks.length)column.append(element('p','empty','Здесь появятся задачи этого этапа.'));
     $('board').append(column);
   });
@@ -48,5 +50,15 @@ $('brief-form').onsubmit=async e=>{
   finally{$('generate').disabled=false;$('generate').textContent='Собрать план ↗';$('brief-form').removeAttribute('aria-busy');}
 };
 $('export').onclick=()=>{const p=project();const content=`# ${p.name}\n\n${p.description}\n\n## Идея\n${p.brief}\n\n`+Object.entries(stages).map(([s,label])=>`## ${label}\n\n`+p.tasks.filter(t=>t.stage===s).map(t=>`- [${s==='done'?'x':' '}] ${t.title}\n  ${t.description.replaceAll('\n','\n  ')}`).join('\n\n')).join('\n\n');const url=URL.createObjectURL(new Blob([content],{type:'text/markdown;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='forma-project.md';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('Проект выгружен в Markdown.');};
-render();
+const compact = window.matchMedia('(max-width: 599px)');
+let briefCollapsed = compact.matches;
+function updateBrief(){
+  $('brief-form').hidden=briefCollapsed;
+  $('brief-toggle').setAttribute('aria-expanded',String(!briefCollapsed));
+  $('brief-toggle').textContent=briefCollapsed?'Открыть бриф +':'Свернуть бриф −';
+}
+$('brief-toggle').onclick=()=>{briefCollapsed=!briefCollapsed;updateBrief();};
+document.querySelectorAll('#stage-switch button').forEach(b=>b.onclick=()=>{selectedStage=b.dataset.stage;render();});
+compact.addEventListener('change',()=>{briefCollapsed=compact.matches;updateBrief();});
+render();updateBrief();
 fetch('/api/config').then(r=>{if(!r.ok)throw Error();return r.json();}).then(c=>{config=c;$('mode').textContent=c.mode==='ai'?'AI подключён':'Демо-режим';$('disclosure').textContent=c.mode==='ai'?'Бриф отправляется в OpenAI для создания плана.':'Демонстрационный план по шаблону. Без отправки данных.';}).catch(()=>{$('mode').textContent='Сервер недоступен';$('generate').disabled=true;announce('Для генерации запусти локальный сервер. Редактор и экспорт доступны.');});
