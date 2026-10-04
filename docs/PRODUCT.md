@@ -36,3 +36,7 @@ Hypotheses, not achieved numbers: percentage of new projects reaching their firs
 ## Next release
 
 Prioritize JSON import/export and recovery, then cloud persistence with authentication. Test demand before adding shared workspaces, deadlines, integrations or notifications. Automatic publication is out of scope.
+
+## Three device experiences
+
+The same MVP now provides phone, tablet and desktop layouts. Phone users select one stage at a time and expand the brief when needed. Tablet users browse a horizontal touch-sized board. Desktop users see the entire three-column process with a persistent project rail. All use the same browser storage; no cross-device cloud sync is implied.
