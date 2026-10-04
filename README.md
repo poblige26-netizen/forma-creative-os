@@ -61,3 +61,7 @@ This is a complete single-user local MVP, not a hosted multi-user service. Data 
 Project direction: Anastasia (`poblige26-netizen`). Product specification, implementation and documentation created with Codex; no claim of hand-written implementation or user research is made.
 
 See [portfolio case study](docs/PORTFOLIO.md) and [product specification](docs/PRODUCT.md).
+
+## Three device versions
+
+Forma adapts automatically: below 600px a task-focused phone interface; 600–1199px a touch-friendly tablet workspace with a horizontally scrollable board; from 1200px a desktop project rail and three-column overview. This is one responsive web application, with shared data and distinct compositions. There are no separately installed native apps or cloud sync. The identity now uses an original three-module mark across the logo, favicon and sidebar motif. See the responsive revision in the design-system specification.
