@@ -37,3 +37,19 @@ Empty project: blank brief with instruction plus empty stage messages. Populated
 ## Assets
 
 `public/favicon.svg` and CSS orb are original vector/CSS assets. No third-party photographs or unlicensed fonts are required.
+
+## Responsive identity revision — 2026-10-05
+
+The brand now uses a three-module mark: an initial idea, the work in progress and its result. Decreasing module height gives a recognisable rhythm and abstract F silhouette. The same geometry appears in the primary mark, favicon and outlined sidebar motif. Removed the unrelated glowing orb and ornamental star. Graphite surfaces carry the interface; violet identifies actions, cyan supports progress. Russian labels replace unnecessary English workspace chrome.
+
+Updated palette: background #10121a; surface #181b26; raised #202431; border #34394b; primary text #f3f3f8; muted #aab0c1; violet #b6a0ff; cyan #87d9e8. Updated controls: 8px radius; cards 10px; panels 14px. Logo assets: public/mark.svg and public/favicon.svg.
+
+| Version | Width | Navigation | Working surface |
+| --- | --- | --- | --- |
+| Phone | Below 600px | Compact brand header, project strip, named add button | One selected stage; visible stage counts; collapsed brief by default |
+| Tablet | 600–1199px | Top brand/actions and project strip | Three touch-sized columns, board scrolls horizontally when necessary |
+| Desktop | 1200px and above | Persistent 240px project rail | Three simultaneous columns, split brief, full project overview |
+
+One application implements these three layout and interaction modes. Projects and data remain shared when the viewport changes; separate native binaries are not supplied. Stage changes follow the moved task on phones, avoiding the appearance that a task vanished. Stage buttons use aria-pressed; the brief toggle uses aria-expanded and aria-controls. Brief can be folded on all device sizes. Dialogs stay within the available screen height.
+
+Design judgment: better identity comes from repeatable geometry, hierarchy and useful space, rather than additional ornament. Phone prioritises the next task; tablet prioritises touch and comparing stages; desktop prioritises overview. Fonts remain the local geometric system stack, avoiding external requests and preserving Cyrillic support.
